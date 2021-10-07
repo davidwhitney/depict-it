@@ -1,4 +1,4 @@
-import { DrawableCanvasElement } from "../../../web_modules/DrawableCanvasElement.js";
+import { DrawableCanvasElement } from "@snakemode/snake-canvas/src/DrawableCanvasElement";
 
 export const DrawableCanvas = {
   data: function () {
