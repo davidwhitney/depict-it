@@ -1,14 +1,24 @@
 import { DepictIt } from "../game/DepictIt.js";
+import { DepictItGameState } from "../game/DepictIt.types.js";
+import { GameStateMachine } from "../game/GameStateMachine.js";
+import { Identity } from "../Identity.js";
+import { Metadata, PubSubClient } from "./PubSubClient.js";
+
+interface ServerState {
+  players: Metadata[];
+  hostIdentity: Identity;
+  started: boolean;
+}
 
 export class P2PServer {
-  private identity: any;
+  private identity: Identity;
   private uniqueId: string;
-  private ably: any;
+  private ably: PubSubClient;
 
-  private stateMachine: any;
-  private state: any;
+  private stateMachine: GameStateMachine<DepictItGameState>;
+  private state: ServerState;
 
-  constructor(identity, uniqueId, ably) {
+  constructor(identity: Identity, uniqueId: string, ably: PubSubClient) {
     this.identity = identity;
     this.uniqueId = uniqueId;
     this.ably = ably;

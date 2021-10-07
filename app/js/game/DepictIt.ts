@@ -1,33 +1,30 @@
-import { GameStateMachine } from "./GameStateMachine.js";
-import {
-  StartHandler, DealHandler, GetUserDrawingHandler, GetUserCaptionHandler, PassStacksAroundHandler,
-  GetUserScoresHandler, EndHandler
-} from "./DepictIt.handlers.js";
+import { GameStateMachine, IHandlerContext } from "./GameStateMachine.js";
+import * as Handlers from "./DepictIt.handlers.js";
+import { DepictItGameState } from "./DepictIt.types.js";
 
-export const DepictIt = (handlerContext) => new GameStateMachine({
+export const DepictIt = (handlerContext: IHandlerContext) => new GameStateMachine<DepictItGameState>({
   steps: {
-    "StartHandler": new StartHandler(),
-    "DealHandler": new DealHandler(),
-    "GetUserDrawingHandler": new GetUserDrawingHandler(183_000),
-    "GetUserCaptionHandler": new GetUserCaptionHandler(63_000),
-    "PassStacksAroundHandler": new PassStacksAroundHandler(),
-    "GetUserScoresHandler": new GetUserScoresHandler(),
-    "EndHandler": new EndHandler()
+    "StartHandler": new Handlers.StartHandler(),
+    "DealHandler": new Handlers.DealHandler(),
+    "GetUserDrawingHandler": new Handlers.GetUserDrawingHandler(183_000),
+    "GetUserCaptionHandler": new Handlers.GetUserCaptionHandler(63_000),
+    "PassStacksAroundHandler": new Handlers.PassStacksAroundHandler(),
+    "GetUserScoresHandler": new Handlers.GetUserScoresHandler(),
+    "EndHandler": new Handlers.EndHandler()
   },
   context: handlerContext
 });
 
 export class DepictItClient {
-
   private gameId: any;
   private channel: any;
 
-  constructor(gameId, channel) {
+  constructor(gameId: string, channel: any) {
     this.gameId = gameId;
     this.channel = channel;
   }
 
-  async sendImage(base64EncodedImage) {
+  public async sendImage(base64EncodedImage) {
     const result = await fetch("/api/storeImage", {
       method: "POST",
       body: JSON.stringify({ gameId: this.gameId, imageData: base64EncodedImage })
@@ -37,15 +34,15 @@ export class DepictItClient {
     this.channel.sendMessage({ kind: "drawing-response", imageUrl: savedUrl.url });
   }
 
-  async sendCaption(caption) {
+  public async sendCaption(caption) {
     this.channel.sendMessage({ kind: "caption-response", caption: caption });
   }
 
-  async logVote(id) {
+  public async logVote(id) {
     this.channel.sendMessage({ kind: "pick-one-response", id: id });
   }
 
-  async hostProgressedVote() {
+  public async hostProgressedVote() {
     this.channel.sendMessage({ kind: "skip-scoring-forwards" })
   }
 }

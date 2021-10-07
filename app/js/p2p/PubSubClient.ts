@@ -1,19 +1,26 @@
 import * as Ably from "ably";
+import { Identity } from "../Identity";
+
+export type GameServerMessage = { kind: string, serverState: any; };
+export type GameStateMessage = { kind: string, type: string };
+export type ValidGameMessage = GameServerMessage | GameStateMessage;
+export type Metadata = { friendlyName: string, clientId: string, uniqueId: string };
+export type OnMessageReceivedCallback = (message: any, metadata: Metadata) => void;
 
 export class PubSubClient {
 
   private connected: boolean;
-  private metadata: any;
-  private onMessageReceivedCallback: (message, metadata) => void;
+  private metadata: Metadata;
+  private onMessageReceivedCallback: OnMessageReceivedCallback;
 
-  private channel: Ably.Realtime.Channel;
+  private channel: Ably.Types.RealtimeChannelPromise;
 
-  constructor(onMessageReceivedCallback) {
+  constructor(onMessageReceivedCallback: OnMessageReceivedCallback) {
     this.connected = false;
     this.onMessageReceivedCallback = onMessageReceivedCallback;
   }
 
-  async connect(identity, uniqueId) {
+  async connect(identity: Identity, uniqueId: string) {
     if (this.connected) return;
 
     this.metadata = { uniqueId: uniqueId, ...identity };
@@ -28,13 +35,17 @@ export class PubSubClient {
     this.connected = true;
   }
 
-  sendMessage(message, targetClientId) {
+  sendMessage<TMessageType extends ValidGameMessage>(message: TMessageType, targetClientId: string | string[] = null) {
     if (!this.connected) {
       throw "Client is not connected";
     }
 
-    message.metadata = this.metadata;
-    message.forClientId = targetClientId ? targetClientId : null;
-    this.channel.publish({ name: "myMessageName", data: message });
+    const ablyMessage = {
+      ...message,
+      metadata: this.metadata,
+      forClientId: targetClientId ? targetClientId : null
+    }
+
+    this.channel.publish({ name: "myMessageName", data: ablyMessage });
   }
 }

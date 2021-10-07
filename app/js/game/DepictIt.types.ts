@@ -1,14 +1,23 @@
-type StackRequirement = "string" | "image";
+import { Metadata } from "../p2p/PubSubClient";
+import { BaseGameState } from "./GameStateMachine";
+
+export type StackItemType = "string" | "image";
+
+export interface DepictItGameState extends BaseGameState {
+    stacks: Stack[];
+    hints: string[];
+    players: Metadata[];
+    activePlayers: any[];
+}
 
 export class Stack {
-
     public id: string;
     public ownedBy: string;
     public heldBy: string;
     public items: StackItem[];
-    public requires: StackRequirement;
+    public requires: StackItemType;
 
-    constructor(ownerId, openingHint) {
+    constructor(ownerId: string, openingHint: string) {
         this.id = uuidv4();
         this.ownedBy = ownerId;
         this.heldBy = ownerId;
@@ -18,20 +27,21 @@ export class Stack {
         this.requires = "image";
     }
 
-    add(item) {
+    public add(item: StackItem) {
         this.items.push(item);
         this.requires = item.type == "image" ? "string" : "image";
     }
 }
 
 export class StackItem {
-
-    public type: StackRequirement;
+    public id?: string;
+    public type: StackItemType;
     public value: string;
     public systemGenerated: boolean;
-    public author: string;
+    public author: string | "SYSTEM";
+    public authorName: string;
 
-    constructor(type, value) {
+    constructor(type: StackItemType, value: string) {
         this.type = type;   // "string" | "image"
         this.value = value; // "full text | url
     }

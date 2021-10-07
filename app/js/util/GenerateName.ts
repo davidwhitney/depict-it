@@ -1,4 +1,4 @@
-export function generateName(wordNumber, divider = " ") {
+export function generateName(wordNumber: number, divider = " ") {
     const allOptions = animals.join(" ");
     const singleWords = allOptions.split(" ");
 
@@ -12,7 +12,7 @@ export function generateName(wordNumber, divider = " ") {
     return names.join(divider);
 }
 
-function randomFrom(collection) {
+function randomFrom(collection: string[]) {
     return collection[Math.floor(Math.random() * collection.length) + 0];
 }
 

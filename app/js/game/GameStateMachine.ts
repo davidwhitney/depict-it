@@ -1,15 +1,25 @@
-export class NullMessageChannel {
-    constructor() {
-        this.sentMessages = []
-    }
+export type GameCompleteState = { complete: boolean; }
+export type StateTransitionResult = { transitionTo: string; error?: boolean; }
+export type ValidStateTransitions = StateTransitionResult | GameCompleteState;
+export type IHandlerContext = { channel: { sendMessage(message: any, targetClientId?: string | string[]): void; } };
+export type IGameDefinition = { steps: any; context: IHandlerContext; };
+export type BaseGameState = { msInCurrentStep: number; }
 
-    sendMessage(message, targetClientId) {
-        this.sentMessages.push({ message, targetClientId });
-    }
-}
+export interface IStepHandler<TStateType extends BaseGameState> {
+    execute(state: TStateType, context: IHandlerContext): Promise<ValidStateTransitions>;
+    handleInput?(state: TStateType, context: IHandlerContext, message: any): Promise<void>;
+};
 
-export class GameStateMachine {
-    constructor(gameDefinition) {
+export class GameStateMachine<TStateType extends BaseGameState> {
+
+    public steps: any;
+    public context: any;
+    public state: TStateType;
+
+    public currentStepKey: string;
+    public msTracker: any;
+
+    constructor(gameDefinition: IGameDefinition) {
         this.steps = gameDefinition.steps;
         this.context = gameDefinition.context || {};
 
@@ -17,9 +27,7 @@ export class GameStateMachine {
             this.context.channel = new NullMessageChannel();
         }
 
-        this.state = {
-            msInCurrentStep: 0,
-        };
+        this.state = { msInCurrentStep: 0 } as any;
 
         this.resetCurrentStepKeepingState();
     }
@@ -71,8 +79,23 @@ export class GameStateMachine {
     }
 }
 
-export function waitUntil(condition, timeout) {
-    return new Promise((res, rej) => {
+export class NullMessageChannel {
+
+    private sentMessages: any[];
+
+    constructor() {
+        this.sentMessages = []
+    }
+
+    sendMessage(message, targetClientId) {
+        this.sentMessages.push({ message, targetClientId });
+    }
+}
+
+const threeMins = 3 * 60 * 1000;
+
+export function waitUntil(condition, timeout = threeMins) {
+    return new Promise<void>((res, rej) => {
 
         if (condition()) {
             res();

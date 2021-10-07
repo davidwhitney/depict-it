@@ -1,13 +1,13 @@
-import { Stack, StackItem } from "./DepictIt.types.js";
+import { DepictItGameState, Stack, StackItem } from "./DepictIt.types.js";
 import { DepictItCards } from "./DepictIt.cards.js";
-import { waitUntil } from "./GameStateMachine.js";
+import { IHandlerContext, IStepHandler, waitUntil } from "./GameStateMachine.js";
 
 function playerIsInActivePlayers(state, playerIdentity) {
     return state.activePlayers.filter(ap => ap.clientId == playerIdentity?.clientId).length > 0;
 }
 
-export class StartHandler {
-    async execute(state, context) {
+export class StartHandler implements IStepHandler<DepictItGameState> {
+    public async execute(state: DepictItGameState, context: IHandlerContext) {
         state.stacks = [];
         state.hints = DepictItCards.slice();
         shuffle(state.hints);
@@ -15,8 +15,8 @@ export class StartHandler {
     }
 }
 
-export class DealHandler {
-    async execute(state, context) {
+export class DealHandler implements IStepHandler<DepictItGameState> {
+    public async execute(state: DepictItGameState, context: IHandlerContext) {
         state.activePlayers = state.players.slice();
 
         for (let player of state.activePlayers) {
@@ -28,14 +28,20 @@ export class DealHandler {
     }
 }
 
-export class GetUserDrawingHandler {
-    constructor(waitForUsersFor) {
+export class GetUserDrawingHandler implements IStepHandler<DepictItGameState> {
+
+    waitForUsersFor: number;
+    userTimeoutPromptAt: number;
+    submitted: number;
+    initialStackLength: any;
+
+    constructor(waitForUsersFor: number) {
         this.waitForUsersFor = waitForUsersFor;
         this.userTimeoutPromptAt = waitForUsersFor - 3_000;
         this.userTimeoutPromptAt = this.userTimeoutPromptAt < 0 ? this.waitForUsersFor : this.userTimeoutPromptAt;
     }
 
-    async execute(state, context) {
+    public async execute(state: DepictItGameState, context: IHandlerContext) {
         this.submitted = 0;
         this.initialStackLength = state.stacks[0].items.length;
 
@@ -46,7 +52,7 @@ export class GetUserDrawingHandler {
             context.channel.sendMessage({ kind: "instruction", type: "drawing-request", value: lastItem.value, timeout: this.userTimeoutPromptAt }, player.clientId);
         }
 
-        const result = { transitionTo: "PassStacksAroundHandler" };
+        const result = { transitionTo: "PassStacksAroundHandler", error: false };
 
         try {
             await waitUntil(() => this.submitted == state.activePlayers.length, this.waitForUsersFor);
@@ -65,7 +71,7 @@ export class GetUserDrawingHandler {
         return result;
     }
 
-    async handleInput(state, context, message) {
+    public async handleInput(state: DepictItGameState, context: IHandlerContext, message) {
         if (!playerIsInActivePlayers(state, message.metadata)) {
             return;
         }
@@ -87,14 +93,20 @@ export class GetUserDrawingHandler {
     }
 }
 
-export class GetUserCaptionHandler {
+export class GetUserCaptionHandler implements IStepHandler<DepictItGameState> {
+
+    waitForUsersFor: any;
+    userTimeoutPromptAt: number;
+    submitted: number;
+    initialStackLength: any;
+
     constructor(waitForUsersFor) {
         this.waitForUsersFor = waitForUsersFor;
         this.userTimeoutPromptAt = waitForUsersFor - 3_000;
         this.userTimeoutPromptAt = this.userTimeoutPromptAt < 0 ? this.waitForUsersFor : this.userTimeoutPromptAt;
     }
 
-    async execute(state, context) {
+    public async execute(state: DepictItGameState, context: IHandlerContext) {
         this.submitted = 0;
         this.initialStackLength = state.stacks[0].items.length;
 
@@ -104,7 +116,7 @@ export class GetUserCaptionHandler {
             context.channel.sendMessage({ kind: "instruction", type: "caption-request", value: lastItem.value, timeout: this.userTimeoutPromptAt }, player.clientId);
         }
 
-        let redirect = { transitionTo: "PassStacksAroundHandler" };
+        let redirect = { transitionTo: "PassStacksAroundHandler", error: false };
 
         try {
             await waitUntil(() => this.submitted == state.activePlayers.length, this.waitForUsersFor);
@@ -124,7 +136,7 @@ export class GetUserCaptionHandler {
         return redirect;
     }
 
-    async handleInput(state, context, message) {
+    public async handleInput(state: DepictItGameState, context: IHandlerContext, message) {
         if (!playerIsInActivePlayers(state, message.metadata)) {
             return;
         }
@@ -147,8 +159,8 @@ export class GetUserCaptionHandler {
     }
 }
 
-export class PassStacksAroundHandler {
-    async execute(state, context) {
+export class PassStacksAroundHandler implements IStepHandler<DepictItGameState> {
+    public async execute(state: DepictItGameState, context: IHandlerContext) {
         let holders = state.stacks.map(s => s.heldBy);
         const popped = holders.pop();
         holders = [popped, ...holders];
@@ -169,9 +181,11 @@ export class PassStacksAroundHandler {
     }
 }
 
-export class GetUserScoresHandler {
+export class GetUserScoresHandler implements IStepHandler<DepictItGameState> {
+    skip: boolean;
+    submitted: number;
 
-    async execute(state, context) {
+    public async execute(state: DepictItGameState, context: IHandlerContext) {
 
         for (let stack of state.stacks) {
             this.skip = false;
@@ -191,7 +205,7 @@ export class GetUserScoresHandler {
         return { transitionTo: "EndHandler" };
     }
 
-    async handleInput(state, context, message) {
+    public async handleInput(state: DepictItGameState, context: IHandlerContext, message) {
         if (!playerIsInActivePlayers(state, message.metadata)) {
             return;
         }
@@ -227,7 +241,7 @@ export class GetUserScoresHandler {
         this.submitted++;
     }
 
-    generateGif(stack) {
+    public generateGif(stack: Stack) {
         try {
             fetch("/api/createGif", { method: "POST", body: JSON.stringify({ stack }) });
         } catch {
@@ -235,8 +249,9 @@ export class GetUserScoresHandler {
     }
 }
 
-export class EndHandler {
-    async execute(state, context) {
+
+export class EndHandler implements IStepHandler<DepictItGameState> {
+    public async execute(state: DepictItGameState, context: IHandlerContext) {
         context.channel.sendMessage({ kind: "instruction", type: "show-scores", playerScores: state.activePlayers });
         return { complete: true };
     }

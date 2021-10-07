@@ -1,5 +1,9 @@
 export class Identity {
-  constructor(friendlyName) {
+
+  public clientId: string;
+  public friendlyName: any;
+
+  constructor(friendlyName: string) {
     this.clientId = this.uuidv4();
     this.friendlyName = friendlyName;
   }
