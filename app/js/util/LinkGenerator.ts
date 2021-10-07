@@ -1,4 +1,7 @@
 export class LinkGenerator {
+
+  private urlRoot: string;
+
   constructor(windowLocation) {
     this.urlRoot = `${windowLocation.protocol}//${windowLocation.host}${windowLocation.pathname}`;
   }

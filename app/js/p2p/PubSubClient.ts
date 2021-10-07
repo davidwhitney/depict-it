@@ -1,4 +1,13 @@
+import * as Ably from "ably";
+
 export class PubSubClient {
+
+  private connected: boolean;
+  private metadata: any;
+  private onMessageReceivedCallback: (message, metadata) => void;
+
+  private channel: Ably.Realtime.Channel;
+
   constructor(onMessageReceivedCallback) {
     this.connected = false;
     this.onMessageReceivedCallback = onMessageReceivedCallback;

@@ -18,6 +18,10 @@ export const DepictIt = (handlerContext) => new GameStateMachine({
 });
 
 export class DepictItClient {
+
+  private gameId: any;
+  private channel: any;
+
   constructor(gameId, channel) {
     this.gameId = gameId;
     this.channel = channel;

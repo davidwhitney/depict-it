@@ -1,6 +1,16 @@
 import { DepictItClient } from "../game/DepictIt.js";
 
 export class P2PClient {
+
+  private identity: any;
+  private uniqueId: string;
+  private ably: any;
+  
+  private depictIt: DepictItClient;
+  private serverState: any;
+
+  private state: any;
+
   constructor(identity, uniqueId, ably) {
     this.identity = identity;
     this.uniqueId = uniqueId;

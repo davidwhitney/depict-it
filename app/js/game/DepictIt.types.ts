@@ -1,4 +1,13 @@
+type StackRequirement = "string" | "image";
+
 export class Stack {
+
+    public id: string;
+    public ownedBy: string;
+    public heldBy: string;
+    public items: StackItem[];
+    public requires: StackRequirement;
+
     constructor(ownerId, openingHint) {
         this.id = uuidv4();
         this.ownedBy = ownerId;
@@ -16,12 +25,17 @@ export class Stack {
 }
 
 export class StackItem {
+
+    public type: StackRequirement;
+    public value: string;
+    public systemGenerated: boolean;
+    public author: string;
+
     constructor(type, value) {
         this.type = type;   // "string" | "image"
         this.value = value; // "full text | url
     }
 }
-
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
