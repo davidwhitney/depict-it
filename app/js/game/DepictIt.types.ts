@@ -21,9 +21,9 @@ export class Stack {
         this.id = uuidv4();
         this.ownedBy = ownerId;
         this.heldBy = ownerId;
-        this.items = [new StackItem("string", openingHint)];
-        this.items[0].systemGenerated = true;
-        this.items[0].author = "SYSTEM";
+        this.items = [
+            StackItem.createSystemGeneratedItem("string", openingHint)
+        ];
         this.requires = "image";
     }
 
@@ -44,6 +44,13 @@ export class StackItem {
     constructor(type: StackItemType, value: string) {
         this.type = type;   // "string" | "image"
         this.value = value; // "full text | url
+    }
+
+    public static createSystemGeneratedItem(type: StackItemType, value: string) {
+        let item = new StackItem(type, value);
+        item.systemGenerated = true;
+        item.author = "SYSTEM";
+        return item;
     }
 }
 

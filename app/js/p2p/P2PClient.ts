@@ -5,11 +5,10 @@ export class P2PClient {
   private identity: any;
   private uniqueId: string;
   private ably: any;
-
-  private depictIt: DepictItClient;
-  private serverState: any;
-
   private state: any;
+
+  public serverState: any; // Bound to Vue components in UI
+  public depictIt: DepictItClient; // Bound to Vue components in UI
 
   constructor(identity, uniqueId, ably) {
     this.identity = identity;
