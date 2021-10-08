@@ -2,6 +2,13 @@ import { chromium } from "playwright";
 const chromeOptions = { headless: false };
 
 export class DepictItAppPageObject {
+
+    browser: any;
+    page: any;
+
+    playerName: any;
+    joinGameUrl: any;
+
     static async create() {
         const browser = await chromium.launch(chromeOptions);
         const page = await browser.newPage();

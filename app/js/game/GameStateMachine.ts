@@ -40,7 +40,7 @@ export class GameStateMachine<TStateType extends BaseGameState> {
     currentStep() { return this.steps[this.currentStepKey]; }
 
     async run() {
-        console.log("Invoking run()", this.currentStepKey);
+        // console.debug("Invoking run()", this.currentStepKey);
 
         this.trackMilliseconds();
 
