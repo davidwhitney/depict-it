@@ -1,13 +1,5 @@
 import { GameStateMachine, NullMessageChannel } from "../../../app/js/game/GameStateMachine";
-import {
-    StartHandler,
-    DealHandler,
-    GetUserDrawingHandler,
-    GetUserCaptionHandler,
-    PassStacksAroundHandler,
-    GetUserScoresHandler,
-    EndHandler
-} from "../../../app/js/game/DepictIt.handlers";
+import * as Handlers from "../../../app/js/game/DepictIt.handlers";
 import { DepictItGameState, Stack, StackItem } from "../../../app/js/game/DepictIt.types";
 import { DepictIt } from "../../../app/js/game/DepictIt";
 import { Identity } from "../../../app/js/Identity";
@@ -35,7 +27,7 @@ describe("StartHandler", () => {
     let step, state;
     beforeEach(() => {
         state = {};
-        step = new StartHandler();
+        step = new Handlers.StartHandler();
     });
 
     it("execute, clears down stacks", async () => {
@@ -62,7 +54,7 @@ describe("DealHandler", () => {
             stacks: [],
             hints: ["hint1", "hint2"]
         };
-        step = new DealHandler();
+        step = new Handlers.DealHandler();
     });
 
     it("execute, generates a stack for each player", async () => {
@@ -87,7 +79,7 @@ describe("GetUserDrawingHandler", () => {
             stacks: [new Stack(identity.clientId, "hint1")],
             hints: ["hint1", "hint2"]
         };
-        step = new GetUserDrawingHandler(5_000);
+        step = new Handlers.GetUserDrawingHandler(5_000);
     });
 
     it("execute, sends instruction for each user to draw an image from the hint at the top of their stack", async () => {
@@ -104,7 +96,7 @@ describe("GetUserDrawingHandler", () => {
 
     it("execute, transitions to PassStacksAroundHandler after all users have provided input", async () => {
         const context = { channel: new NullMessageChannel() };
-        const step = new GetUserDrawingHandler(200);
+        const step = new Handlers.GetUserDrawingHandler(200);
 
         setTimeout(async () => {
             step.handleInput(state, context, { kind: "drawing-response", imageUrl: "http://my/drawing.jpg", metadata: { clientId: identity.clientId } });
@@ -119,7 +111,7 @@ describe("GetUserDrawingHandler", () => {
     it("execute, transitions to PassStacksAroundHandler with error flag if users timeout.", async () => {
         const channel = new NullMessageChannel();
         const context = { channel: channel };
-        const step = new GetUserDrawingHandler(50);
+        const step = new Handlers.GetUserDrawingHandler(50);
 
         const result = await step.execute(state, context);
 
@@ -132,7 +124,7 @@ describe("GetUserDrawingHandler", () => {
         const context = { channel: channel };
         const initialStackLength = state.stacks[0].items.length;
 
-        step = new GetUserDrawingHandler(100);
+        step = new Handlers.GetUserDrawingHandler(100);
         const result = await step.execute(state, context);
 
         expect(state.stacks[0].items.length).toBe(initialStackLength + 1);
@@ -142,7 +134,7 @@ describe("GetUserDrawingHandler", () => {
         const channel = new NullMessageChannel();
         const context = { channel: channel };
 
-        step = new GetUserDrawingHandler(10_000);
+        step = new Handlers.GetUserDrawingHandler(10_000);
         step.execute(state, context);
 
         expect(channel.sentMessages[0].message.timeout).toBe(7_000);
@@ -152,7 +144,7 @@ describe("GetUserDrawingHandler", () => {
         const channel = new NullMessageChannel();
         const context = { channel: channel };
 
-        step = new GetUserDrawingHandler(2_000);
+        step = new Handlers.GetUserDrawingHandler(2_000);
         step.execute(state, context);
 
         expect(channel.sentMessages[0].message.timeout).toBe(2_000);
@@ -160,7 +152,7 @@ describe("GetUserDrawingHandler", () => {
 });
 
 describe("GetUserCaptionHandler", () => {
-    let step: GetUserCaptionHandler;
+    let step: Handlers.GetUserCaptionHandler;
     let state, identity, channel, context;
     beforeEach(() => {
         identity = new Identity("Some player");
@@ -174,7 +166,7 @@ describe("GetUserCaptionHandler", () => {
         context = {
             channel: channel
         };
-        step = new GetUserCaptionHandler(5_000);
+        step = new Handlers.GetUserCaptionHandler(5_000);
 
         state.stacks[0].add(new StackItem("image", "http://tempuri.org/img.png"));
     });
@@ -200,7 +192,7 @@ describe("GetUserCaptionHandler", () => {
     });
 
     it("execute, transitions to passStacksAround with error flag if users timeout.", async () => {
-        step = new GetUserCaptionHandler(100);
+        step = new Handlers.GetUserCaptionHandler(100);
         const result = await step.execute(state, context);
 
         expect(result.transitionTo).toBe("PassStacksAroundHandler");
@@ -209,7 +201,7 @@ describe("GetUserCaptionHandler", () => {
 
     it("execute, if user times out, all stacks still have correct number of items in them so things don't crash later.", async () => {
         const initialStackLength = state.stacks[0].items.length;
-        step = new GetUserCaptionHandler(100);
+        step = new Handlers.GetUserCaptionHandler(100);
 
         await step.execute(state, context);
 
@@ -220,14 +212,14 @@ describe("GetUserCaptionHandler", () => {
     });
 
     it("execute, timeout returned to user has three seconds of leeway in it.", async () => {
-        step = new GetUserCaptionHandler(10_000);
+        step = new Handlers.GetUserCaptionHandler(10_000);
         step.execute(state, context);
 
         expect(channel.sentMessages[0].message.timeout).toBe(7_000);
     });
 
     it("execute when three seconds of leeway would be too much, timeout is the same as the handler timeout", async () => {
-        step = new GetUserCaptionHandler(2_000);
+        step = new Handlers.GetUserCaptionHandler(2_000);
         step.execute(state, context);
 
         expect(channel.sentMessages[0].message.timeout).toBe(2_000);
@@ -254,7 +246,7 @@ describe("PassStacksAroundHandler", () => {
             channel: channel
         };
 
-        step = new PassStacksAroundHandler();
+        step = new Handlers.PassStacksAroundHandler();
         state.stacks[0].add(new StackItem("image", "http://tempuri.org/img.png"));
         state.stacks[1].add(new StackItem("image", "http://tempuri.org/img.png"));
     });
@@ -307,7 +299,7 @@ describe("GetUserScoresHandler", () => {
             channel: channel
         }
 
-        step = new GetUserScoresHandler();
+        step = new Handlers.GetUserScoresHandler();
         const item = new StackItem("image", "http://tempuri.org/img.png");
         item.author = p1.clientId;
         item.id = "1234";
@@ -358,7 +350,7 @@ describe("EndHandler", () => {
             channel: channel
         }
 
-        step = new EndHandler();
+        step = new Handlers.EndHandler();
     });
 
     it("execute, completes the state machine", async () => {
@@ -376,8 +368,3 @@ describe("EndHandler", () => {
         expect(channel.sentMessages[0].message.playerScores).toBeDefined();
     });
 });
-
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}

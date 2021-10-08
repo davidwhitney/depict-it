@@ -1,36 +1,23 @@
 import { DepictItAppPageObject } from "./DepictItAppPageObject";
+import { test, expect } from '@playwright/test';
 
-jest.setTimeout(30_000);
+let host: DepictItAppPageObject;
+let cleanup: DepictItAppPageObject[];
+let joinUrl: any;
 
-describe("Behaviour of the app as a game host", () => {
-
-    let host, cleanup;
-    beforeEach(async () => {
-        host = await DepictItAppPageObject.create();
-        cleanup = [host];
-    });
-
-    afterEach(async () => { cleanup.forEach(item => item.close()); });
-
-    it("Can start a lobby for a game", async () => {
-        const joinUrl = await host.hostASession();
-
-        expect(joinUrl).not.toBeNull();
-    });
+test.beforeEach(async () => {
+    host = await DepictItAppPageObject.create();
+    joinUrl = await host.hostASession();
+    cleanup = [host];
 });
 
-describe("Behaviour of the app as a game client", () => {
+test.afterEach(async () => {
+    cleanup.forEach(item => item.close());
+});
 
-    let host, cleanup, joinUrl;
-    beforeEach(async () => {
-        host = await DepictItAppPageObject.create();
-        joinUrl = await host.hostASession();
-        cleanup = [host];
-    });
+test.describe("Behaviour of the app as a game client", () => {
 
-    afterEach(async () => { cleanup.forEach(item => item.close()); });
-
-    it("Players can join a game", async () => {
+    test("Players can join a game", async () => {
         const player2 = await newPageObject();
         await player2.joinASession(joinUrl);
 
@@ -44,31 +31,31 @@ describe("Behaviour of the app as a game client", () => {
 
         const connectedPlayers = await host.connectedPlayers();
 
-        expect(connectedPlayers).toContain(host.playerName);
-        expect(connectedPlayers).toContain(player2.playerName);
-        expect(connectedPlayers).toContain(player3.playerName);
-        expect(connectedPlayers).toContain(player4.playerName);
+        await expect(connectedPlayers).toContain(host.playerName);
+        await expect(connectedPlayers).toContain(player2.playerName);
+        await expect(connectedPlayers).toContain(player3.playerName);
+        await expect(connectedPlayers).toContain(player4.playerName);
     });
 
-    it("Players follow a join link, there is no host button available to them.", async () => {
+    test("Players follow a join link, there is no host button available to them.", async () => {
         const player2 = await newPageObject();
         await player2.followJoinLink(joinUrl);
 
         const pageBodyAsSeenByPlayerTwo = await player2.pageBody();
-        expect(pageBodyAsSeenByPlayerTwo).not.toContain("Create Game");
+        await expect(pageBodyAsSeenByPlayerTwo).not.toContain("Create Game");
     });
 
-    it("Players follow a join link, they are told they are waiting on the host.", async () => {
+    test("Players follow a join link, they are told they are waiting on the host.", async () => {
         const player2 = await newPageObject();
         await player2.joinASession(joinUrl);
 
         const waitMessage = await player2.youAreWaitingMessage();
 
-        expect(waitMessage).toContain("Waiting for ");
-        expect(waitMessage).toContain(" to start the game.");
+        await expect(waitMessage).toContain("Waiting for ");
+        await expect(waitMessage).toContain(" to start the game.");
     });
 
-    it("Game is started - drawable canvas visible.", async () => {
+    test("Game is started - drawable canvas visible.", async () => {
         const player2 = await newPageObject();
         await player2.joinASession(joinUrl);
 
@@ -76,7 +63,7 @@ describe("Behaviour of the app as a game client", () => {
         await host.drawableCanvasIsVisible();
     });
 
-    it("Player can draw on a canvas, and will be prompted to wait for other players", async () => {
+    test("Player can draw on a canvas, and will be prompted to wait for other players", async () => {
         const player2 = await newPageObject();
         await player2.joinASession(joinUrl);
 
@@ -87,10 +74,10 @@ describe("Behaviour of the app as a game client", () => {
         await sleep(2000);
 
         const pageBodyAsSeenByPlayerTwo = await player2.pageBody();
-        expect(pageBodyAsSeenByPlayerTwo).toContain("Waiting for other players to finish.")
+        await expect(pageBodyAsSeenByPlayerTwo).toContain("Waiting for other players to finish.")
     });
 
-    it("Players can play multiple rounds of a game on the same gameId", async () => {
+    test("Players can play multiple rounds of a game on the same gameId", async () => {
         const player2 = await newPageObject();
         await player2.joinASession(joinUrl);
         await sleep(2000);
