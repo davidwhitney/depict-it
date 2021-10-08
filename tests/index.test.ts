@@ -1,12 +1,14 @@
 import { default as stubAbly } from "./stubs/ably";
 const ablyStub = stubAbly();
+jest.mock("ably", () => ablyStub);
 
-global.Ably = ablyStub;
-global.Vue = require("../app/js/vue.min.js");
-global.crypto = { getRandomValues: function () { return [123454373] } };
-global.window = { location: { protocol: "https:", host: "localhost", pathname: "/" } }
+global['Ably'] = ablyStub;
+global['Vue'] = require("../app/js/vue.min.js");
+global.crypto = { getRandomValues: function () { return [123454373] } as any } as any;
+global.window = { location: { protocol: "https:", host: "localhost", pathname: "/" } } as any;
+global.window['Ably'] = ablyStub;
 
-const { app } = require("../app/index.js");
+import { app } from "../app/index";
 
 describe("Vue app", () => {
 

@@ -1,11 +1,11 @@
-import { GameStateMachine, waitUntil } from "../../../app/js/game/GameStateMachine";
+import { BaseGameState, GameStateMachine, IGameDefinition, waitUntil } from "../../../app/js/game/GameStateMachine";
 
 describe("GameStateMachine", () => {
 
     it("run, triggers opening step", async () => {
         const game = twoStepGame();
 
-        const sut = new GameStateMachine(game);
+        const sut = new GameStateMachine<FakeGameState>(game);
         await sut.run();
 
         expect(sut.state.executeCalled).toBe(true);
@@ -14,7 +14,7 @@ describe("GameStateMachine", () => {
     it("run, opening step transition is executed", async () => {
         const game = twoStepGame();
 
-        const sut = new GameStateMachine(game);
+        const sut = new GameStateMachine<FakeGameState>(game);
         await sut.run();
 
         expect(sut.currentStepKey).toBe("EndHandler");
@@ -22,14 +22,14 @@ describe("GameStateMachine", () => {
 
     it("resetCurrentStepKeepingState, allows games to proceed to a 'next round' without resetting state object.", async () => {
         const game = twoStepGame();
-        const sut = new GameStateMachine(game);
+        const sut = new GameStateMachine<FakeGameState>(game);
 
         await sut.run();
         sut.state.foo = "bar";
         expect(sut.currentStepKey).toBe("EndHandler");
 
         await sut.resetCurrentStepKeepingState();
-        
+
         expect(sut.state.foo).toBe("bar");
         expect(sut.currentStepKey).toBe("StartHandler");
     });
@@ -37,7 +37,7 @@ describe("GameStateMachine", () => {
     it("run, game that only proceeds with input, proceeds with input", async () => {
         const game = gameThatNeedsInputToProceed();
 
-        const sut = new GameStateMachine(game);
+        const sut = new GameStateMachine<FakeGameState>(game);
         sut.run();
         sut.handleInput("input");
 
@@ -49,7 +49,7 @@ describe("GameStateMachine", () => {
     it("run, step doesn't contain input handler when input received, nothing happens", async () => {
         const game = gameThatNeedsToWaitBetweenSteps();
 
-        const sut = new GameStateMachine(game);
+        const sut = new GameStateMachine<FakeGameState>(game);
         await sut.run();
 
         sut.handleInput("input");
@@ -66,69 +66,77 @@ describe("GameStateMachine", () => {
 
         await waitUntil(() => { return foo == true; }, 2000);
 
-        expect(foo).toBe(true);        
+        expect(foo).toBe(true);
     });
 
     it("run, steps execute returns navigable location, navigates using return value", async () => {
         const game = twoStepGame();
-        const sut = new GameStateMachine(game);
-        
+        const sut = new GameStateMachine<FakeGameState>(game);
+
         await sut.run();
 
-        expect(sut.currentStepKey).toBe("EndHandler");       
+        expect(sut.currentStepKey).toBe("EndHandler");
     });
 
 });
 
 
+interface FakeGameState extends BaseGameState {
+    executeCalled: boolean;
+    foo?: string;
+};
+
 const twoStepGame = () => ({
     steps: {
         "StartHandler": {
-            execute: async function (state) { 
-                state.executeCalled = true; 
+            execute: async function (state) {
+                state.executeCalled = true;
                 return { transitionTo: "EndHandler" };
             }
         },
         "EndHandler": {
             execute: async function (state) { }
         }
-    }
+    },
+    context: null
 });
 
 const gameThatNeedsInputToProceed = () => ({
     steps: {
         "StartHandler": {
-            execute: async function (state) { 
-                state.executeCalled = true;                
-                await waitUntil(() => state.gotInput == true, 5_000);                
-                return { transitionTo: "EndHandler" }; 
+            execute: async function (state) {
+                state.executeCalled = true;
+                await waitUntil(() => state.gotInput == true, 5_000);
+                return { transitionTo: "EndHandler" };
             },
-            handleInput: async function(state, input) { 
-                state.gotInput = true; 
+            handleInput: async function (state, input) {
+                state.gotInput = true;
             }
         },
         "EndHandler": {
             execute: async function (state) { },
-            handleInput: async function(state, input) { }
+            handleInput: async function (state, input) { }
         }
-    }
+    },
+    context: null
 });
 
 
 const gameThatNeedsToWaitBetweenSteps = () => ({
     steps: {
         "StartHandler": {
-            execute: async function (state) { 
-                state.executeCalled = true;                
+            execute: async function (state) {
+                state.executeCalled = true;
                 await waitUntil(() => state.msInCurrentStep >= 250, 5_000);
                 return { transitionTo: "EndHandler" };
             }
         },
         "EndHandler": {
             execute: async function (state) { },
-            handleInput: async function(state, input) { }
+            handleInput: async function (state, input) { }
         }
-    }
+    },
+    context: null
 });
 
 

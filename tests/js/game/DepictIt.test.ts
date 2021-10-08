@@ -1,4 +1,4 @@
-import { NullMessageChannel } from "../../../app/js/game/GameStateMachine";
+import { GameStateMachine, NullMessageChannel } from "../../../app/js/game/GameStateMachine";
 import {
     StartHandler,
     DealHandler,
@@ -8,20 +8,20 @@ import {
     GetUserScoresHandler,
     EndHandler
 } from "../../../app/js/game/DepictIt.handlers";
-import { Stack, StackItem } from "../../../app/js/game/DepictIt.types";
+import { DepictItGameState, Stack, StackItem } from "../../../app/js/game/DepictIt.types";
 import { DepictIt } from "../../../app/js/game/DepictIt";
 import { Identity } from "../../../app/js/Identity";
 
 describe("DepictIt", () => {
-    let sut;
+    let sut: GameStateMachine<DepictItGameState>;
     beforeEach(() => {
         sut = DepictIt({
-            channel: {}
+            channel: {} as any
         });
 
         sut.state.players = [];
-        sut.state.players.push(new Identity("Player1"));
-        sut.state.players.push(new Identity("Player2"));
+        sut.state.players.push({ ...new Identity("Player1"), uniqueId: "1" });
+        sut.state.players.push({ ...new Identity("Player2"), uniqueId: "2" });
     });
 
     it("run, sets up the game and prompts users for their first drawing", async () => {
@@ -103,8 +103,7 @@ describe("GetUserDrawingHandler", () => {
     });
 
     it("execute, transitions to PassStacksAroundHandler after all users have provided input", async () => {
-        const channel = new NullMessageChannel();
-        const context = { channel: channel };
+        const context = { channel: new NullMessageChannel() };
         const step = new GetUserDrawingHandler(200);
 
         setTimeout(async () => {
@@ -114,7 +113,7 @@ describe("GetUserDrawingHandler", () => {
         const result = await step.execute(state, context);
 
         expect(result.transitionTo).toBe("PassStacksAroundHandler");
-        expect(result.error).not.toBeDefined();
+        expect(result.error).toBe(false);
     });
 
     it("execute, transitions to PassStacksAroundHandler with error flag if users timeout.", async () => {
@@ -161,7 +160,8 @@ describe("GetUserDrawingHandler", () => {
 });
 
 describe("GetUserCaptionHandler", () => {
-    let step, state, identity, channel, context;
+    let step: GetUserCaptionHandler;
+    let state, identity, channel, context;
     beforeEach(() => {
         identity = new Identity("Some player");
         channel = new NullMessageChannel();
@@ -196,7 +196,7 @@ describe("GetUserCaptionHandler", () => {
         const result = await step.execute(state, context);
 
         expect(result.transitionTo).toBe("PassStacksAroundHandler");
-        expect(result.error).not.toBeDefined();
+        expect(result.error).toBe(false);
     });
 
     it("execute, transitions to passStacksAround with error flag if users timeout.", async () => {

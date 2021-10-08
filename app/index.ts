@@ -1,15 +1,17 @@
+declare const Vue;
+
 try {
   // Warm up the Serverless functions so subsequent calls are faster.
   fetch("/api/init");
 }
 catch { }
 
-import { Identity } from "./js/Identity.js";
-import { P2PClient } from "./js/p2p/P2PClient.js";
-import { P2PServer } from "./js/p2p/P2PServer.js";
-import { PubSubClient } from "./js/p2p/PubSubClient.js";
+import { Identity } from "./js/Identity";
+import { P2PClient } from "./js/p2p/P2PClient";
+import { P2PServer } from "./js/p2p/P2PServer";
+import { PubSubClient } from "./js/p2p/PubSubClient";
 
-import "./js/vue.config.js";
+import "./js/vue.config";
 
 export var app = new Vue({
   el: '#app',

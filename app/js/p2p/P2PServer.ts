@@ -1,8 +1,8 @@
-import { DepictIt } from "../game/DepictIt.js";
-import { DepictItGameState } from "../game/DepictIt.types.js";
-import { GameStateMachine } from "../game/GameStateMachine.js";
-import { Identity } from "../Identity.js";
-import { Metadata, PubSubClient } from "./PubSubClient.js";
+import { DepictIt } from "../game/DepictIt";
+import { DepictItGameState } from "../game/DepictIt.types";
+import { GameStateMachine } from "../game/GameStateMachine";
+import { Identity } from "../Identity";
+import { Metadata, PubSubClient } from "./PubSubClient";
 
 interface ServerState {
   players: Metadata[];

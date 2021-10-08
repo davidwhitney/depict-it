@@ -81,13 +81,13 @@ export class GameStateMachine<TStateType extends BaseGameState> {
 
 export class NullMessageChannel {
 
-    private sentMessages: any[];
+    public sentMessages: any[];
 
     constructor() {
         this.sentMessages = []
     }
 
-    sendMessage(message, targetClientId) {
+    public sendMessage(message, targetClientId) {
         this.sentMessages.push({ message, targetClientId });
     }
 }

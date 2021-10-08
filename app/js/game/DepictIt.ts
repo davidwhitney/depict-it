@@ -1,6 +1,6 @@
-import { GameStateMachine, IHandlerContext } from "./GameStateMachine.js";
-import * as Handlers from "./DepictIt.handlers.js";
-import { DepictItGameState } from "./DepictIt.types.js";
+import { GameStateMachine, IHandlerContext } from "./GameStateMachine";
+import * as Handlers from "./DepictIt.handlers";
+import { DepictItGameState } from "./DepictIt.types";
 
 export const DepictIt = (handlerContext: IHandlerContext) => new GameStateMachine<DepictItGameState>({
   steps: {

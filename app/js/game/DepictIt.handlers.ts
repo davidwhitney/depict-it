@@ -1,6 +1,6 @@
-import { DepictItGameState, Stack, StackItem } from "./DepictIt.types.js";
-import { DepictItCards } from "./DepictIt.cards.js";
-import { IHandlerContext, IStepHandler, waitUntil } from "./GameStateMachine.js";
+import { DepictItGameState, Stack, StackItem } from "./DepictIt.types";
+import { DepictItCards } from "./DepictIt.cards";
+import { IHandlerContext, IStepHandler, waitUntil } from "./GameStateMachine";
 
 function playerIsInActivePlayers(state, playerIdentity) {
     return state.activePlayers.filter(ap => ap.clientId == playerIdentity?.clientId).length > 0;
