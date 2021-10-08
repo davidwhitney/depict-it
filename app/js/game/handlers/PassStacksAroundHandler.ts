@@ -1,4 +1,4 @@
-import { DepictItGameState } from "../DepictIt.types";
+import { DepictItGameState } from "../DepictIt";
 import { IHandlerContext, IStepHandler } from "../GameStateMachine";
 
 export class PassStacksAroundHandler implements IStepHandler<DepictItGameState> {

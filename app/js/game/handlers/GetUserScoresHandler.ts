@@ -1,4 +1,5 @@
-import { DepictItGameState, Stack } from "../DepictIt.types";
+import { DepictItGameState } from "../DepictIt";
+import { Stack } from "../DepictIt.types";
 import { IHandlerContext, IStepHandler, waitUntil } from "../GameStateMachine";
 import { playerIsInActivePlayers } from "./HandlerHelpers";
 

@@ -1,4 +1,5 @@
-import { DepictItGameState, Stack, StackItem } from "../DepictIt.types";
+import { DepictItGameState } from "../DepictIt";
+import { Stack } from "../DepictIt.types";
 import { IHandlerContext, IStepHandler, waitUntil } from "../GameStateMachine";
 
 export class DealHandler implements IStepHandler<DepictItGameState> {

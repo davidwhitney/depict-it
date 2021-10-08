@@ -3,13 +3,6 @@ import { BaseGameState } from "./GameStateMachine";
 
 export type StackItemType = "string" | "image";
 
-export interface DepictItGameState extends BaseGameState {
-    stacks: Stack[];
-    hints: string[];
-    players: Metadata[];
-    activePlayers: any[];
-}
-
 export class Stack {
     public id: string;
     public ownedBy: string;

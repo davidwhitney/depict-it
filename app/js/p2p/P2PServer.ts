@@ -1,5 +1,4 @@
-import { DepictIt } from "../game/DepictIt";
-import { DepictItGameState } from "../game/DepictIt.types";
+import { DepictIt, DepictItGameState } from "../game/DepictIt";
 import { GameStateMachine } from "../game/GameStateMachine";
 import { Identity } from "../Identity";
 import { Metadata, PubSubClient } from "./PubSubClient";

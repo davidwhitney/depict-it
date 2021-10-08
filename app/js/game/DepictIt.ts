@@ -1,6 +1,14 @@
 import * as Handlers from "./DepictIt.handlers";
-import { GameStateMachine, IHandlerContext } from "./GameStateMachine";
-import { DepictItGameState } from "./DepictIt.types";
+import { Metadata } from "../p2p/PubSubClient";
+import { Stack } from "./DepictIt.types";
+import { BaseGameState, GameStateMachine, IHandlerContext } from "./GameStateMachine";
+
+export interface DepictItGameState extends BaseGameState {
+  stacks: Stack[];
+  hints: string[];
+  players: Metadata[];
+  activePlayers: any[];
+}
 
 export const DepictIt = (handlerContext: IHandlerContext) => new GameStateMachine<DepictItGameState>({
   steps: {

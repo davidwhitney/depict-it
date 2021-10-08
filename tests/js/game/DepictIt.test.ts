@@ -1,7 +1,7 @@
-import { GameStateMachine, NullMessageChannel } from "../../../app/js/game/GameStateMachine";
 import * as Handlers from "../../../app/js/game/DepictIt.handlers";
-import { DepictItGameState, Stack, StackItem } from "../../../app/js/game/DepictIt.types";
-import { DepictIt } from "../../../app/js/game/DepictIt";
+import { GameStateMachine, NullMessageChannel } from "../../../app/js/game/GameStateMachine";
+import { Stack, StackItem } from "../../../app/js/game/DepictIt.types";
+import { DepictIt, DepictItGameState } from "../../../app/js/game/DepictIt";
 import { Identity } from "../../../app/js/Identity";
 
 describe("DepictIt", () => {
